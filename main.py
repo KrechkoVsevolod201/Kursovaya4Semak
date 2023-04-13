@@ -202,24 +202,24 @@ def epsilon(l_steps: int, node: int):
     k_eps = k_steps(l_steps)
     result_x = solver_explicit_simple_epsilon(l_steps, α, c, l, T, k_eps, k_const, R, node)
     # print(result_x)
-    print('узел при I = 50: ' + str(result_x))
+    print(f"узел = {node} при I = {l_steps}: " + str(result_x))
     l_steps = int(l_steps * 2)
     node = int(node * 2)
     k_eps = k_steps(l_steps)
     infelicity1 = solver_explicit_simple_epsilon(l_steps, α, c, l, T, k_eps, k_const, R, node)
     # print(infelicity1)
     infelicity = np.abs(result_x - infelicity1)
-    print('узел при I = 100: ' + str(infelicity1))
+    print(f"узел = {node} при I = {l_steps}: " + str(infelicity1))
     l_steps = int(l_steps * 2)
     node = int(node * 2)
     k_eps = k_steps(l_steps)
     infelicity2 = solver_explicit_simple_epsilon(l_steps, α, c, l, T, k_eps, k_const, R, node)
     # print(infelicity2)
-    print('узел при I = 200: ' + str(infelicity2))
+    print(f"узел = {node} при I = {l_steps}: " + str(infelicity2))
     infelicity2 = np.abs(infelicity - infelicity2)
 
     infelicity = infelicity1 / infelicity2
-    print('delta_1 / delta_2 = ' + str(infelicity))
+    print('delta= ' + str(infelicity))
     print('=======================================')
 
 
@@ -237,4 +237,9 @@ if __name__ == '__main__':
     epsilon(10, 4)
     epsilon(10, 3)
     epsilon(10, 2)
+
+    epsilon(50, 25)
+    epsilon(50, 20)
+    epsilon(50, 15)
+    epsilon(50, 10)
 
