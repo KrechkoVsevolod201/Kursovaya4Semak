@@ -86,7 +86,6 @@ def solutions(n, t=T, flag='x', x=l / 2):
 
 
 def k_steps(I: int):
-    # K = (l**2)/(2 * T * I**2)
     return int((2 * T * I ** 2) // (c * l ** 2))
 
 
@@ -172,7 +171,7 @@ def solver_explicit_simple_epsilon(I, α, c, l, T, K, k_const, R, node: int):
     # node должен быть в диапазоне от 0 до I - 1
     h_y = l / I
     h_t = T / K
-    print(I, K)
+    # print(I, K)
     φ_y = np.zeros(I)
     for i in range(int(l / (3 * h_y)), int(2 * l / (3 * h_y))):
         φ_y[i] = 16
@@ -202,48 +201,26 @@ def epsilon(l_steps: int, node: int):
     # l_steps = 50
     k_eps = k_steps(l_steps)
     result_x = solver_explicit_simple_epsilon(l_steps, α, c, l, T, k_eps, k_const, R, node)
-    print(result_x)
+    # print(result_x)
     print('узел при I = 50: ' + str(result_x))
-    l_steps_new = int(l_steps * 2)
-    node_mod = int(node * l_steps_new / l_steps)
-    k_eps = k_steps(l_steps_new)
-    infelicity1 = solver_explicit_simple_epsilon(l_steps_new, α, c, l, T, k_eps, k_const, R, node_mod)
-    print(infelicity1)
-    infelicity = result_x - infelicity1
-    print('погрешность при I = 100: ' + str(infelicity))
-    l_steps_new = int(l_steps_new * 2)
-    node_mod = int(node * l_steps_new / l_steps)
-    k_eps = k_steps(l_steps_new)
-    infelicity2 = solver_explicit_simple_epsilon(l_steps_new, α, c, l, T, k_eps, k_const, R, node_mod)
-    print(infelicity2)
-    infelicity2 = np.abs(infelicity1 - infelicity2)
-    print('погрешность при I = 200: ' + str(infelicity2))
-    infelicity = infelicity / infelicity2
+    l_steps = int(l_steps * 2)
+    node = int(node * 2)
+    k_eps = k_steps(l_steps)
+    infelicity1 = solver_explicit_simple_epsilon(l_steps, α, c, l, T, k_eps, k_const, R, node)
+    # print(infelicity1)
+    infelicity = np.abs(result_x - infelicity1)
+    print('узел при I = 100: ' + str(infelicity1))
+    l_steps = int(l_steps * 2)
+    node = int(node * 2)
+    k_eps = k_steps(l_steps)
+    infelicity2 = solver_explicit_simple_epsilon(l_steps, α, c, l, T, k_eps, k_const, R, node)
+    # print(infelicity2)
+    print('узел при I = 200: ' + str(infelicity2))
+    infelicity2 = np.abs(infelicity - infelicity2)
+
+    infelicity = infelicity1 / infelicity2
     print('delta_1 / delta_2 = ' + str(infelicity))
-
-# def epsilon():
-#     results_x[125] = solutions(125, 125)  # аналитическое решение в момент времени 125 сек
-#     # print(results_x[125][0])
-#     print('узел в аналитике: ' + str(results_x[125][49]))
-#     result_x = results_x[125][49]
-#     l_steps = 50
-#     k_eps = k_steps(l_steps)
-#     infelicity1 = solver_explicit_simple_epsilon(l_steps, α, c, l, T, k_eps, k_const, R)
-#     infelicity1 = result_x - infelicity1
-#     print('погрешность при I = 50: ' + str(infelicity1))
-#     l_steps = l_steps * 2
-#     k_eps = k_steps(l_steps)
-#     infelicity2 = solver_explicit_simple_epsilon(l_steps, α, c, l, T, k_eps, k_const, R)
-#     infelicity2 = np.abs(result_x - infelicity2)
-#     print('погрешность при I = 100: ' + str(infelicity2))
-#     infelicity = infelicity1 / infelicity2
-#     print('delta_1 / delta_2 = ' + str(infelicity))
-
-
-# def epsilon():
-# eps_4 = 3/4 * h_t
-# eps_16 = 3/16 * h_t
-# delta = eps_4 / eps_16
+    print('=======================================')
 
 
 if __name__ == '__main__':
@@ -256,4 +233,8 @@ if __name__ == '__main__':
     k_const = 0.59  # Вт/(см*град)
     R = 0.1  # Радиус стержня
     # solver_explicit_simple(I_steps, α, c, l, T, k_const, R)
-    epsilon(50, 25)
+    epsilon(10, 5)
+    epsilon(10, 4)
+    epsilon(10, 3)
+    epsilon(10, 2)
+
