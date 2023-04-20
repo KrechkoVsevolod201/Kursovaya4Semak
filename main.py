@@ -100,7 +100,7 @@ def solver_explicit_simple_epsilon(I, α, c, l, T, K, k_const, R, node: int):
     h_t = T / K
     # print(I, K)
     φ_y = np.zeros(I)
-    for i in range(int(l / (3 * h_y)), int(2 * l / (3 * h_y))):
+    for i in range(0, int(l // (3 * h_y) + 1)):
         φ_y[i] = 16
     w = np.zeros((I, K))
     for k in range(1, K - 1):
@@ -109,9 +109,71 @@ def solver_explicit_simple_epsilon(I, α, c, l, T, K, k_const, R, node: int):
             w[i, k + 1] = w[i, k] + (k_const * h_t / (c * h_y ** 2)) * (w[i + 1, k] - 2 * w[i, k] + w[i - 1, k]) - (
                     2 * h_t * α / (R / 2 * c ** 2)) * w[i, k] + h_t * φ_y[i] / c
             # Граничные условия
-        w[0, k + 1] = k_const * h_t * (2 * w[1, k] - 2 * w[0, k]) / (c * h_y ** 2) + (1 - (h_t * 2 * α) / (R * c ** 2)) * w[0, k] + φ_y[0]
+        w[0, k + 1] = k_const * h_t * (2 * w[1, k] - 2 * w[0, k]) / (c * h_y ** 2) + (
+                1 - (h_t * 2 * α) / (R * c ** 2)) * w[0, k] + h_t * φ_y[0] / c
         w[I - 1, k + 1] = k_const * h_t * (2 * w[i - 1, k] - 2 * h_y * (α / c) * w[i, k] - 2 * w[i, k]) + w[i, k] - (h_t * 2 * α) / (R * c ** 2) * w[i, k] + h_t * φ_y[i] / c
     return w[node, int(K-1)]
+
+
+def solver_convergence(I, α, c, l, T, K, k_const, R):
+    # node должен быть в диапазоне от 0 до I - 1
+    h_y = l / I
+    h_t = T / K
+    # print(I, K)
+    φ_y = np.zeros(I)
+    for i in range(0, int(l // (3 * h_y) + 1)):
+        φ_y[i] = 16
+    w = np.zeros((I, K))
+    for k in range(1, K - 1):
+        # Вычисляем приближенное решение во внутренних узлах сетки
+        for i in range(1, I - 1):
+            w[i, k + 1] = w[i, k] + (k_const * h_t / (c * h_y ** 2)) * (w[i + 1, k] - 2 * w[i, k] + w[i - 1, k]) - (
+                    2 * h_t * α / (R / 2 * c ** 2)) * w[i, k] + h_t * φ_y[i] / c
+            # Граничные условия
+        w[0, k + 1] = k_const * h_t * (2 * w[1, k] - 2 * w[0, k]) / (c * h_y ** 2) + (
+                1 - (h_t * 2 * α) / (R * c ** 2)) * w[0, k] + h_t * φ_y[0] / c
+        w[I - 1, k + 1] = k_const * h_t * (2 * w[i - 1, k] - 2 * h_y * (α / c) * w[i, k] - 2 * w[i, k]) + w[i, k] - (h_t * 2 * α) / (R * c ** 2) * w[i, k] + h_t * φ_y[i] / c
+    return w
+
+
+def convergence(I, α, c, l, T, k_const, R):
+    K = k_steps(I, T, c, l, α)
+    # y = np.linspace(0, l, I)
+
+
+    # ================================================
+    plt.figure(1)
+    # plt.plot(y, results_x[250], label=str(int(T)) + ' C аналитика')
+    w = solver_convergence(I, α, c, l, T, K, k_const, R)
+    plt.plot(w[:, int(K - 1)], label=str(int(T)) + ' C' + f"при I = {I}")
+    I = I * 2
+    K = k_steps(I, T, c, l, α)
+    w = solver_convergence(I, α, c, l, T, K, k_const, R)
+    plt.plot(w[:, int(K - 1)], label=str(int(T)) + ' C' + f"при I = {I}")
+    I = I * 2
+    K = k_steps(I, T, c, l, α)
+    w = solver_convergence(I, α, c, l, T, K, k_const, R)
+    plt.plot(w[:, int(K - 1)], label=str(int(T)) + ' C' + f"при I = {I}")
+    I = I * 2
+    K = k_steps(I, T, c, l, α)
+    w = solver_convergence(I, α, c, l, T, K, k_const, R)
+    plt.plot(w[:, int(K - 1)], label=str(int(T)) + ' C' + f"при I = {I}")
+    plt.grid()
+    plt.legend()
+    plt.xlabel("x, CM")
+    plt.ylabel("w, K")
+    # ==========================================
+    plt.figure(2)
+    t = np.linspace(0, T, K)
+    w_t = w[int(I - 1), :]
+    plt.plot(t, w_t, label=str(6) + ' CM')
+    plt.grid()
+    plt.legend()
+    plt.xlabel("t, C")
+    plt.ylabel("w, K")
+    # ===========================================
+
+    plt.show()
 
 
 def epsilon(l_steps: int, node: int, α, c, l, T, k_const, R):
@@ -162,9 +224,7 @@ def solver_explicit_simple(I, α, c, l, T, k_const, R):
         φ_y[i] = 16
 
     y = np.linspace(0, l, I)
-    print(y[1] - y[0])
     t = np.linspace(0, T, K)
-    print(t[1] - t[0])
     w = np.zeros((I, K))
     for k in range(0, K - 1):
         w[i, 0] = 0
@@ -203,23 +263,27 @@ def solver_explicit_simple(I, α, c, l, T, k_const, R):
     plt.plot(y, w_l, label=str(int(50)) + ' C')
     w_l = w[:, int(25 / h_t)]
     plt.plot(y, w_l, label=str(int(25)) + ' C')
-    plt.plot(y, φ_y, label='φ_y')
+    # plt.plot(y, φ_y, label='φ_y')
     plt.grid()
     plt.legend()
     plt.xlabel("x, CM")
     plt.ylabel("w, K")
     # ==========================================
     plt.subplot(2, 1, 2)
-    w_t = w[int(I / 2), :]
-    plt.plot(t, w_t, label=str(int(l / 2)) + ' CM')
-    w_t = w[int(I / 3), :]
-    plt.plot(t, w_t, label=str(int(l / 3)) + ' CM')
-    w_t = w[int(I / 4), :]
-    plt.plot(t, w_t, label=str(int(l / 4)) + ' CM')
-    w_t = w[int(I / 5), :]
-    plt.plot(t, w_t, label=str((l / 5)) + ' CM')
-    w_t = w[int(I / 6), :]
-    plt.plot(t, w_t, label=str((l / 6)) + ' CM')
+    w_t = w[int(I - 1), :]
+    plt.plot(t, w_t, label=str(6) + ' CM')
+    w_t = w[int(5 / h_y), :]
+    plt.plot(t, w_t, label=str(5) + ' CM')
+    w_t = w[int(4 / h_y), :]
+    plt.plot(t, w_t, label=str(4) + ' CM')
+    w_t = w[int(3 / h_y), :]
+    plt.plot(t, w_t, label=str(3) + ' CM')
+    w_t = w[int(2 / h_y), :]
+    plt.plot(t, w_t, label=str(2) + ' CM')
+    w_t = w[int(1 / h_y), :]
+    plt.plot(t, w_t, label=str(1) + ' CM')
+    w_t = w[int(0), :]
+    plt.plot(t, w_t, label=str(0) + ' CM')
     plt.grid()
     plt.legend()
     plt.xlabel("t, C")
@@ -230,7 +294,7 @@ def solver_explicit_simple(I, α, c, l, T, k_const, R):
 
 
 if __name__ == '__main__':
-    I_steps = 50  # кол-во отсчётов I
+    I_steps = 10  # кол-во отсчётов I
     # K = 20000  # кол-во отсчётов K
     α = 0.001  # Вт/(см^2*град)
     c = 1.65  # Дж/(cм^3*град)
@@ -238,14 +302,17 @@ if __name__ == '__main__':
     T = 250  # с
     k_const = 0.59  # Вт/(см*град)
     R = 0.1  # Радиус стержня
-    solver_explicit_simple(I_steps, α, c, l, T, k_const, R)
-    epsilon(10, 5, α, c, l, T, k_const, R)
-    epsilon(10, 4, α, c, l, T, k_const, R)
-    epsilon(10, 3, α, c, l, T, k_const, R)
-    epsilon(10, 2, α, c, l, T, k_const, R)
+    # solver_explicit_simple(I_steps, α, c, l, T, k_const, R)
 
-    epsilon(50, 25, α, c, l, T, k_const, R)
-    epsilon(50, 20, α, c, l, T, k_const, R)
-    epsilon(50, 15, α, c, l, T, k_const, R)
-    epsilon(50, 10, α, c, l, T, k_const, R)
+    convergence(I_steps, α, c, l, T, k_const, R)
+
+    # epsilon(10, 5, α, c, l, T, k_const, R)
+    # epsilon(10, 4, α, c, l, T, k_const, R)
+    # epsilon(10, 3, α, c, l, T, k_const, R)
+    # epsilon(10, 2, α, c, l, T, k_const, R)
+#
+    # epsilon(50, 25, α, c, l, T, k_const, R)
+    # epsilon(50, 20, α, c, l, T, k_const, R)
+    # epsilon(50, 15, α, c, l, T, k_const, R)
+    # epsilon(50, 10, α, c, l, T, k_const, R)
 

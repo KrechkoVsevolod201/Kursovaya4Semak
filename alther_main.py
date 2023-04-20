@@ -100,7 +100,7 @@ def solver_explicit_simple_epsilon(I, α, c, l, T, K, k_const, R, node_l: int, n
     h_t = T / K
     # print(I, K)
     φ_y = np.zeros(I)
-    for i in range(int(l / (3 * h_y)), int(2 * l / (3 * h_y))):
+    for i in range(0, int(l // (3 * h_y) + 1)):
         φ_y[i] = 16
     w = np.zeros((I, K))
     for k in range(1, K - 1):
@@ -109,7 +109,8 @@ def solver_explicit_simple_epsilon(I, α, c, l, T, K, k_const, R, node_l: int, n
             w[i, k + 1] = w[i, k] + (k_const * h_t / (c * h_y ** 2)) * (w[i + 1, k] - 2 * w[i, k] + w[i - 1, k]) - (
                     2 * h_t * α / (R / 2 * c ** 2)) * w[i, k] + h_t * φ_y[i] / c
             # Граничные условия
-        w[0, k + 1] = k_const * h_t * (2 * w[1, k] - 2 * w[0, k]) / (c * h_y ** 2) + (1 - (h_t * 2 * α) / (R * c ** 2)) * w[0, k] + φ_y[0]
+        w[0, k + 1] = k_const * h_t * (2 * w[1, k] - 2 * w[0, k]) / (c * h_y ** 2) + (
+                1 - (h_t * 2 * α) / (R * c ** 2)) * w[0, k] + h_t * φ_y[0] / c
         w[I - 1, k + 1] = k_const * h_t * (2 * w[i - 1, k] - 2 * h_y * (α / c) * w[i, k] - 2 * w[i, k]) + w[i, k] - (h_t * 2 * α) / (R * c ** 2) * w[i, k] + h_t * φ_y[i] / c
     return w[node_l, node_t - 1]
 
@@ -238,15 +239,15 @@ if __name__ == '__main__':
     T = 250  # с
     k_const = 0.59  # Вт/(см*град)
     R = 0.1  # Радиус стержня
-    solver_explicit_simple(I_steps, α, c, l, T, k_const, R)
-    epsilon(10, 5, α, c, l, T, k_const, R)
-    epsilon(20, 10, α, c, l, T, k_const, R)
-    epsilon(30, 15, α, c, l, T, k_const, R)
-    epsilon(40, 20, α, c, l, T, k_const, R)
+    # solver_explicit_simple(I_steps, α, c, l, T, k_const, R)
+    epsilon(10, 1, α, c, l, T, k_const, R)
+    epsilon(20, 1, α, c, l, T, k_const, R)
+    epsilon(30, 1, α, c, l, T, k_const, R)
+    epsilon(40, 1, α, c, l, T, k_const, R)
 
-    epsilon(50, 25, α, c, l, T, k_const, R)
-    epsilon(60, 30, α, c, l, T, k_const, R)
-    epsilon(70, 35, α, c, l, T, k_const, R)
-    epsilon(80, 40, α, c, l, T, k_const, R)
+    epsilon(50, 1, α, c, l, T, k_const, R)
+    epsilon(60, 1, α, c, l, T, k_const, R)
+    epsilon(70, 1, α, c, l, T, k_const, R)
+    epsilon(80, 1, α, c, l, T, k_const, R)
 
 
