@@ -94,7 +94,7 @@ def k_steps(I, T, c, l, α):
     return int((2 * ((T * I ** 2) / (c * l ** 2) + (α * T) / (R * c ** 2))))
 
 
-def solver_explicit_simple_epsilon(I, α, c, l, T, K, k_const, R, node: int):
+def solver_explicit_simple_epsilon(I, α, c, l, T, K, k_const, R, node_l: int, node_t: int):
     # node должен быть в диапазоне от 0 до I - 1
     h_y = l / I
     h_t = T / K
@@ -111,10 +111,10 @@ def solver_explicit_simple_epsilon(I, α, c, l, T, K, k_const, R, node: int):
             # Граничные условия
         w[0, k + 1] = k_const * h_t * (2 * w[1, k] - 2 * w[0, k]) / (c * h_y ** 2) + (1 - (h_t * 2 * α) / (R * c ** 2)) * w[0, k] + φ_y[0]
         w[I - 1, k + 1] = k_const * h_t * (2 * w[i - 1, k] - 2 * h_y * (α / c) * w[i, k] - 2 * w[i, k]) + w[i, k] - (h_t * 2 * α) / (R * c ** 2) * w[i, k] + h_t * φ_y[i] / c
-    return w[node, int(K-1)]
+    return w[node_l, node_t - 1]
 
 
-def epsilon(l_steps: int, node: int, α, c, l, T, k_const, R):
+def epsilon(l_steps: int, node_l: int, α, c, l, T, k_const, R):
     # α = 0.001  # Вт/(см^2*град)
     # c = 1.65  # Дж/(cм^3*град)
     # l = 6  # см
@@ -123,22 +123,20 @@ def epsilon(l_steps: int, node: int, α, c, l, T, k_const, R):
     # R = 0.1  # Радиус стержня
     multiplier = 2
     k_eps = k_steps(l_steps, T, c, l, α)
-    result_x = solver_explicit_simple_epsilon(l_steps, α, c, l, T, k_eps, k_const, R, node)
-    print(f"узел = {node} при I = {l_steps}: " + str(result_x))
-    l_steps = int(l_steps * multiplier)
-    node = int(node * multiplier)
-    k_eps = k_steps(l_steps, T, c, l, α)
-    infelicity1 = solver_explicit_simple_epsilon(l_steps, α, c, l, T, k_eps, k_const, R, node)
+    node_t = k_eps
+    result_x = solver_explicit_simple_epsilon(l_steps, α, c, l, T, k_eps, k_const, R, node_l, node_t)
+    print(f"узел при I = {l_steps} при K = {k_eps}: " + str(result_x))
+    k_eps = k_eps * multiplier
+    node_t = int(node_t * multiplier)
+    infelicity1 = solver_explicit_simple_epsilon(l_steps, α, c, l, T, k_eps, k_const, R, node_l, node_t)
     infelicity = np.abs(result_x - infelicity1)
-    print(f"узел = {node} при I = {l_steps}: " + str(infelicity1))
-    l_steps = int(l_steps * multiplier)
-    node = int(node * multiplier)
-    k_eps = k_steps(l_steps, T, c, l, α)
-    infelicity2 = solver_explicit_simple_epsilon(l_steps, α, c, l, T, k_eps, k_const, R, node)
-    print(f"узел = {node} при I = {l_steps}: " + str(infelicity2))
-    infelicity2 = np.abs(infelicity - infelicity2)
-
-    infelicity = infelicity1 / infelicity2
+    print(f"I = {l_steps} при K = {k_eps}: " + str(infelicity))
+    node_t = int(node_t * multiplier)
+    k_eps = k_eps * multiplier
+    infelicity2 = solver_explicit_simple_epsilon(l_steps, α, c, l, T, k_eps, k_const, R, node_l, node_t)
+    infelicity2 = np.abs(infelicity1 - infelicity2)
+    print(f"I = {l_steps} при K = {k_eps}: " + str(infelicity2))
+    infelicity = infelicity / infelicity2
     print('delta= ' + str(infelicity))
     print('=======================================')
 
@@ -174,6 +172,8 @@ def solver_explicit_simple(I, α, c, l, T, k_const, R):
                     (2 * h_t * α) / (R / 2 * c ** 2)) * w[i, k] + h_t * φ_y[i] / c
 
         # Задаем граничные условия
+        # w[0, k + 1] = k_const * h_t / (c * h_y**2) * (2 * w[1, k] - 2 * w[0, k]) + 2 * h_t * α / (R*c**2) * w[0, k] + h_t * φ_y[i]
+        # w[i, k + 1] = k_const * h_t / (c * h_y**2) * (w[i - 1, k] - w[i, k]) + 2 * h_t * α / (R*c**2) * w[i, k]
         w[0, k + 1] = k_const * h_t * (2 * w[1, k] - 2 * w[0, k]) / (c * h_y ** 2) + (
                     1 - (h_t * 2 * α) / (R * c ** 2)) * w[0, k] + h_t * φ_y[0] / c
 
@@ -240,12 +240,13 @@ if __name__ == '__main__':
     R = 0.1  # Радиус стержня
     solver_explicit_simple(I_steps, α, c, l, T, k_const, R)
     epsilon(10, 5, α, c, l, T, k_const, R)
-    epsilon(10, 4, α, c, l, T, k_const, R)
-    epsilon(10, 3, α, c, l, T, k_const, R)
-    epsilon(10, 2, α, c, l, T, k_const, R)
+    epsilon(20, 10, α, c, l, T, k_const, R)
+    epsilon(30, 15, α, c, l, T, k_const, R)
+    epsilon(40, 20, α, c, l, T, k_const, R)
 
     epsilon(50, 25, α, c, l, T, k_const, R)
-    epsilon(50, 20, α, c, l, T, k_const, R)
-    epsilon(50, 15, α, c, l, T, k_const, R)
-    epsilon(50, 10, α, c, l, T, k_const, R)
+    epsilon(60, 30, α, c, l, T, k_const, R)
+    epsilon(70, 35, α, c, l, T, k_const, R)
+    epsilon(80, 40, α, c, l, T, k_const, R)
+
 
