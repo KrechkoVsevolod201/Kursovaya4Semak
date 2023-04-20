@@ -138,35 +138,56 @@ def solver_convergence(I, α, c, l, T, K, k_const, R):
 
 def convergence(I, α, c, l, T, k_const, R):
     K = k_steps(I, T, c, l, α)
-    # y = np.linspace(0, l, I)
+    y = np.linspace(0, l, I)
 
 
     # ================================================
     plt.figure(1)
-    # plt.plot(y, results_x[250], label=str(int(T)) + ' C аналитика')
+
     w = solver_convergence(I, α, c, l, T, K, k_const, R)
-    plt.plot(w[:, int(K - 1)], label=str(int(T)) + ' C' + f"при I = {I}")
+    plt.plot(y, w[:, int(K - 1)], label=str(int(T)) + ' Cек ' + f"при I = {I} и K = {K}")
     I = I * 2
     K = k_steps(I, T, c, l, α)
     w = solver_convergence(I, α, c, l, T, K, k_const, R)
-    plt.plot(w[:, int(K - 1)], label=str(int(T)) + ' C' + f"при I = {I}")
+    y = np.linspace(0, l, I)
+    plt.plot(y, w[:, int(K - 1)], label=str(int(T)) + ' Cек ' + f"при I = {I} и K = {K}")
     I = I * 2
     K = k_steps(I, T, c, l, α)
     w = solver_convergence(I, α, c, l, T, K, k_const, R)
-    plt.plot(w[:, int(K - 1)], label=str(int(T)) + ' C' + f"при I = {I}")
+    y = np.linspace(0, l, I)
+    plt.plot(y, w[:, int(K - 1)], label=str(int(T)) + ' Cек ' + f"при I = {I} и K = {K}")
     I = I * 2
     K = k_steps(I, T, c, l, α)
     w = solver_convergence(I, α, c, l, T, K, k_const, R)
-    plt.plot(w[:, int(K - 1)], label=str(int(T)) + ' C' + f"при I = {I}")
+    y = np.linspace(0, l, I)
+    plt.plot(y, w[:, int(K - 1)], label=str(int(T)) + ' Cек ' + f"при I = {I} и K = {K}")
     plt.grid()
     plt.legend()
     plt.xlabel("x, CM")
     plt.ylabel("w, K")
     # ==========================================
     plt.figure(2)
+
+    I = int(I / 8)
+    K = k_steps(I, T, c, l, α)
+    w = solver_convergence(I, α, c, l, T, K, k_const, R)
     t = np.linspace(0, T, K)
-    w_t = w[int(I - 1), :]
-    plt.plot(t, w_t, label=str(6) + ' CM')
+    plt.plot(t, w[int(I - 1), :], label=str(6) + ' CM ' + f"при I = {I} и K = {K}")
+    I = I * 2
+    K = k_steps(I, T, c, l, α)
+    w = solver_convergence(I, α, c, l, T, K, k_const, R)
+    t = np.linspace(0, T, K)
+    plt.plot(t, w[int(I - 1), :], label=str(6) + ' CM ' + f"при I = {I} и K = {K}")
+    I = I * 2
+    K = k_steps(I, T, c, l, α)
+    w = solver_convergence(I, α, c, l, T, K, k_const, R)
+    t = np.linspace(0, T, K)
+    plt.plot(t, w[int(I - 1), :], label=str(6) + ' CM ' + f"при I = {I} и K = {K}")
+    I = I * 2
+    K = k_steps(I, T, c, l, α)
+    w = solver_convergence(I, α, c, l, T, K, k_const, R)
+    t = np.linspace(0, T, K)
+    plt.plot(t, w[int(I - 1), :], label=str(6) + ' CM ' + f"при I = {I} и K = {K}")
     plt.grid()
     plt.legend()
     plt.xlabel("t, C")
