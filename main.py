@@ -84,9 +84,14 @@ def solutions(n, t=T, flag='x', x=l / 2):
     return solution
 '''
 
+'''
+def k_steps(I: int, T, c, l):
+     return int((2 * T * I ** 2) / (c * l ** 2))
+'''
 
-def k_steps(I: int):
-    return int((2 * T * I ** 2) // (c * l ** 2))
+
+def k_steps(I, T, c, l, α):
+    return int((2 * ((T * I ** 2) / (c * l ** 2) + (α * T) / (R * c ** 2))))
 
 
 def solver_explicit_simple(I, α, c, l, T, k_const, R):
@@ -95,31 +100,38 @@ def solver_explicit_simple(I, α, c, l, T, k_const, R):
     параболического уравнения.
     """
 
-    K = k_steps(I)
-    print(K)
+    K = k_steps(I, T, c, l, α)
+    print(f"k = {K}")
     h_y = l / I
     h_t = T / K
 
-    print(h_y)
+    print(f"h_y = {h_y}")
+    print(f"h_t = {h_t}")
     φ_y = np.zeros(I)
-    for i in range(int(l / (3 * h_y)), int(2 * l / (3 * h_y))):
+    # for i in range(int(l / (3 * h_y)), int(2 * l / (3 * h_y))):
+    for i in range(0, int(l // (3 * h_y) + 1)):
         φ_y[i] = 16
+
     y = np.linspace(0, l, I)
+    print(y[1] - y[0])
     t = np.linspace(0, T, K)
+    print(t[1] - t[0])
     w = np.zeros((I, K))
     for k in range(0, K - 1):
+        w[i, 0] = 0
         # Вычисляем приближенное решение во внутренних узлах сетки
-        for i in range(1, I - 1):
-            w[i, k + 1] = w[i, k] + (k_const * h_t / (c * h_y * h_y)) * (w[i + 1, k] - 2 * w[i, k] + w[i - 1, k]) - (
-                        2 * h_t * α / (R / 2 * c * c)) * w[i, k] + h_t * φ_y[i] / c
+        for i in range(0, I - 1):
+            w[i, k + 1] = w[i, k] + (k_const * h_t / (c * h_y ** 2)) * (w[i + 1, k] - 2 * w[i, k] + w[i - 1, k]) - (
+                    (2 * h_t * α) / (R / 2 * c ** 2)) * w[i, k] + h_t * φ_y[i] / c
 
         # Задаем граничные условия
         # w[0, k + 1] = k_const * h_t / (c * h_y**2) * (2 * w[1, k] - 2 * w[0, k]) + 2 * h_t * α / (R*c**2) * w[0, k] + h_t * φ_y[i]
         # w[i, k + 1] = k_const * h_t / (c * h_y**2) * (w[i - 1, k] - w[i, k]) + 2 * h_t * α / (R*c**2) * w[i, k]
         w[0, k + 1] = k_const * h_t * (2 * w[1, k] - 2 * w[0, k]) / (c * h_y ** 2) + (
-                    1 - (h_t * 2 * α) / (R * c ** 2)) * w[0, k] + φ_y[0]
-        w[I - 1, k + 1] = k_const * h_t * (2 * w[i - 1, k] - 2 * h_y * (α / c) * w[i, k] - 2 * w[i, k]) / (c * h_y ** 2) + w[i, k] - (
-                    h_t * 2 * α) / (R * c ** 2) * w[i, k] + h_t * φ_y[i] / c
+                    1 - (h_t * 2 * α) / (R * c ** 2)) * w[0, k] + h_t * φ_y[0] / c
+
+        w[I - 1, k + 1] = k_const * h_t * (2 * w[I - 2, k] - 2 * h_y * w[I - 1, k] * (α / c) - 2 * w[I - 1, k]) / (c * h_y ** 2) + w[I - 1, k] - (
+                    h_t * 2 * α) / (R * c ** 2) * w[I - 1, k] + h_t * φ_y[I - 1] / c
 
     # ================================================
 
@@ -130,10 +142,11 @@ def solver_explicit_simple(I, α, c, l, T, k_const, R):
 
     # ================================================
     plt.subplot(2, 1, 1)
-    #  plt.plot(y, results_x[250], label=str(int(T)) + ' C аналитика')
+    # plt.plot(y, results_x[250], label=str(int(T)) + ' C аналитика')
+
     w_l = w[:, int(K-1)]
     plt.plot(y, w_l, label=str(int(T)) + ' C')
-    w_l = w[:, int(200 / h_t)]
+    w_l = w[:, int(220 / h_t)]
     plt.plot(y, w_l, label=str(int(200)) + ' C')
     w_l = w[:, int(150 / h_t)]
     plt.plot(y, w_l, label=str(int(150))+' C')
@@ -143,6 +156,7 @@ def solver_explicit_simple(I, α, c, l, T, k_const, R):
     plt.plot(y, w_l, label=str(int(50)) + ' C')
     w_l = w[:, int(25 / h_t)]
     plt.plot(y, w_l, label=str(int(25)) + ' C')
+    plt.plot(y, φ_y, label='φ_y')
     plt.grid()
     plt.legend()
     plt.xlabel("x, CM")
@@ -190,29 +204,30 @@ def solver_explicit_simple_epsilon(I, α, c, l, T, K, k_const, R, node: int):
 def epsilon(l_steps: int, node: int):
     α = 0.001  # Вт/(см^2*град)
     c = 1.65  # Дж/(cм^3*град)
-    l = 12  # см
+    l = 6  # см
     T = 250  # с
     k_const = 0.59  # Вт/(см*град)
     R = 0.1  # Радиус стержня
+    multiplier = 2
     # results_x[125] = solutions(125, 125)  # аналитическое решение в момент времени 125 сек
     # print(results_x[125][0])
     # print('узел в аналитике: ' + str(results_x[125][int(I_steps/2)]))
     # result_x = results_x[125][int(I_steps/2)]
     # l_steps = 50
-    k_eps = k_steps(l_steps)
+    k_eps = k_steps(l_steps, T, c, l, α)
     result_x = solver_explicit_simple_epsilon(l_steps, α, c, l, T, k_eps, k_const, R, node)
     # print(result_x)
     print(f"узел = {node} при I = {l_steps}: " + str(result_x))
-    l_steps = int(l_steps * 2)
-    node = int(node * 2)
-    k_eps = k_steps(l_steps)
+    l_steps = int(l_steps * multiplier)
+    node = int(node * multiplier)
+    k_eps = k_steps(l_steps, T, c, l, α)
     infelicity1 = solver_explicit_simple_epsilon(l_steps, α, c, l, T, k_eps, k_const, R, node)
     # print(infelicity1)
     infelicity = np.abs(result_x - infelicity1)
     print(f"узел = {node} при I = {l_steps}: " + str(infelicity1))
-    l_steps = int(l_steps * 2)
-    node = int(node * 2)
-    k_eps = k_steps(l_steps)
+    l_steps = int(l_steps * multiplier)
+    node = int(node * multiplier)
+    k_eps = k_steps(l_steps, T, c, l, α)
     infelicity2 = solver_explicit_simple_epsilon(l_steps, α, c, l, T, k_eps, k_const, R, node)
     # print(infelicity2)
     print(f"узел = {node} при I = {l_steps}: " + str(infelicity2))
@@ -224,15 +239,15 @@ def epsilon(l_steps: int, node: int):
 
 
 if __name__ == '__main__':
-    I_steps = 100  # кол-во отсчётов I
+    I_steps = 50  # кол-во отсчётов I
     # K = 20000  # кол-во отсчётов K
     α = 0.001  # Вт/(см^2*град)
     c = 1.65  # Дж/(cм^3*град)
-    l = 12  # см
+    l = 6  # см
     T = 250  # с
     k_const = 0.59  # Вт/(см*град)
     R = 0.1  # Радиус стержня
-    # solver_explicit_simple(I_steps, α, c, l, T, k_const, R)
+    solver_explicit_simple(I_steps, α, c, l, T, k_const, R)
     epsilon(10, 5)
     epsilon(10, 4)
     epsilon(10, 3)
