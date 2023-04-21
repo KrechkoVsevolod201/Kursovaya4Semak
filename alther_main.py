@@ -111,7 +111,9 @@ def solver_explicit_simple_epsilon(I, α, c, l, T, K, k_const, R, node_l: int, n
             # Граничные условия
         w[0, k + 1] = k_const * h_t * (2 * w[1, k] - 2 * w[0, k]) / (c * h_y ** 2) + (
                 1 - (h_t * 2 * α) / (R * c ** 2)) * w[0, k] + h_t * φ_y[0] / c
-        w[I - 1, k + 1] = k_const * h_t * (2 * w[i - 1, k] - 2 * h_y * (α / c) * w[i, k] - 2 * w[i, k]) + w[i, k] - (h_t * 2 * α) / (R * c ** 2) * w[i, k] + h_t * φ_y[i] / c
+        w[I - 1, k + 1] = w[I - 2, k + 1] / (1 + α * h_y / c)
+        # w[I - 1, k + 1] = k_const * h_t * (2 * w[i - 1, k] - 2 * h_y * (α / c) * w[i, k] - 2 * w[i, k]) + w[i, k] - (h_t * 2 * α) / (R * c ** 2) * w[i, k] + h_t * φ_y[i] / c
+    w[1, :] = w[0, :]
     return w[node_l, node_t - 1]
 
 
@@ -177,10 +179,10 @@ def solver_explicit_simple(I, α, c, l, T, k_const, R):
         # w[i, k + 1] = k_const * h_t / (c * h_y**2) * (w[i - 1, k] - w[i, k]) + 2 * h_t * α / (R*c**2) * w[i, k]
         w[0, k + 1] = k_const * h_t * (2 * w[1, k] - 2 * w[0, k]) / (c * h_y ** 2) + (
                     1 - (h_t * 2 * α) / (R * c ** 2)) * w[0, k] + h_t * φ_y[0] / c
-
-        w[I - 1, k + 1] = k_const * h_t * (2 * w[I - 2, k] - 2 * h_y * w[I - 1, k] * (α / c) - 2 * w[I - 1, k]) / (c * h_y ** 2) + w[I - 1, k] - (
-                    h_t * 2 * α) / (R * c ** 2) * w[I - 1, k] + h_t * φ_y[I - 1] / c
-
+        w[I - 1, k + 1] = w[I - 2, k + 1] / (1 + α * h_y / c)
+        # w[I - 1, k + 1] = k_const * h_t * (2 * w[I - 2, k] - 2 * h_y * w[I - 1, k] * (α / c) - 2 * w[I - 1, k]) / (c * h_y ** 2) + w[I - 1, k] - (
+                   #  h_t * 2 * α) / (R * c ** 2) * w[I - 1, k] + h_t * φ_y[I - 1] / c
+    w[1, :] = w[0, :]
     # ================================================
 
     # results_x[250] = solutions(250, 250)  # аналитическое решение в момент времени 250 сек
@@ -244,10 +246,8 @@ if __name__ == '__main__':
     epsilon(20, 1, α, c, l, T, k_const, R)
     epsilon(30, 1, α, c, l, T, k_const, R)
     epsilon(40, 1, α, c, l, T, k_const, R)
-
+#
     epsilon(50, 1, α, c, l, T, k_const, R)
     epsilon(60, 1, α, c, l, T, k_const, R)
     epsilon(70, 1, α, c, l, T, k_const, R)
     epsilon(80, 1, α, c, l, T, k_const, R)
-
-

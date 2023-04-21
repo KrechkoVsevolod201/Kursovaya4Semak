@@ -98,7 +98,6 @@ def solver_explicit_simple_epsilon(I, α, c, l, T, K, k_const, R, node: int):
     # node должен быть в диапазоне от 0 до I - 1
     h_y = l / I
     h_t = T / K
-    # print(I, K)
     φ_y = np.zeros(I)
     for i in range(0, int(l // (3 * h_y) + 1)):
         φ_y[i] = 16
@@ -111,7 +110,9 @@ def solver_explicit_simple_epsilon(I, α, c, l, T, K, k_const, R, node: int):
             # Граничные условия
         w[0, k + 1] = k_const * h_t * (2 * w[1, k] - 2 * w[0, k]) / (c * h_y ** 2) + (
                 1 - (h_t * 2 * α) / (R * c ** 2)) * w[0, k] + h_t * φ_y[0] / c
-        w[I - 1, k + 1] = k_const * h_t * (2 * w[i - 1, k] - 2 * h_y * (α / c) * w[i, k] - 2 * w[i, k]) + w[i, k] - (h_t * 2 * α) / (R * c ** 2) * w[i, k] + h_t * φ_y[i] / c
+        w[I - 1, k + 1] = w[I - 2, k + 1] / (1 + α * h_y / c)
+        # w[I - 1, k + 1] = k_const * h_t * (2 * w[i - 1, k] - 2 * h_y * (α / c) * w[i, k] - 2 * w[i, k]) + w[i, k] - (h_t * 2 * α) / (R * c ** 2) * w[i, k] + h_t * φ_y[i] / c
+    w[1, :] = w[0, :]
     return w[node, int(K-1)]
 
 
@@ -132,7 +133,9 @@ def solver_convergence(I, α, c, l, T, K, k_const, R):
             # Граничные условия
         w[0, k + 1] = k_const * h_t * (2 * w[1, k] - 2 * w[0, k]) / (c * h_y ** 2) + (
                 1 - (h_t * 2 * α) / (R * c ** 2)) * w[0, k] + h_t * φ_y[0] / c
-        w[I - 1, k + 1] = k_const * h_t * (2 * w[i - 1, k] - 2 * h_y * (α / c) * w[i, k] - 2 * w[i, k]) + w[i, k] - (h_t * 2 * α) / (R * c ** 2) * w[i, k] + h_t * φ_y[i] / c
+        w[I - 1, k + 1] = w[I - 2, k + 1] / (1 + α * h_y / c)
+        # w[I - 1, k + 1] = k_const * h_t * (2 * w[i - 1, k] - 2 * h_y * (α / c) * w[i, k] - 2 * w[i, k]) + w[i, k] - (h_t * 2 * α) / (R * c ** 2) * w[i, k] + h_t * φ_y[i] / c
+    w[1, :] = w[0, :]
     return w
 
 
@@ -257,9 +260,11 @@ def solver_explicit_simple(I, α, c, l, T, k_const, R):
         # Задаем граничные условия
         w[0, k + 1] = k_const * h_t * (2 * w[1, k] - 2 * w[0, k]) / (c * h_y ** 2) + (
                     1 - (h_t * 2 * α) / (R * c ** 2)) * w[0, k] + h_t * φ_y[0] / c
+        w[I - 1, k + 1] = w[I - 2, k + 1] / (1 + α * h_y / c)
+        # w[I - 1, k + 1] = k_const * h_t * (2 * w[I - 2, k] - 2 * h_y * w[I - 1, k] * (α / c) - 2 * w[I - 1, k]) / (c * h_y ** 2) + w[I - 1, k] - (
+                    # h_t * 2 * α) / (R * c ** 2) * w[I - 1, k] + h_t * φ_y[I - 1] / c
 
-        w[I - 1, k + 1] = k_const * h_t * (2 * w[I - 2, k] - 2 * h_y * w[I - 1, k] * (α / c) - 2 * w[I - 1, k]) / (c * h_y ** 2) + w[I - 1, k] - (
-                    h_t * 2 * α) / (R * c ** 2) * w[I - 1, k] + h_t * φ_y[I - 1] / c
+    w[1, :] = w[0, :]
 
     # ================================================
 
